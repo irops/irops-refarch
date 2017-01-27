@@ -1,0 +1,132 @@
+#!/bin/bash
+#
+# Creates the IROPS VPC via CloudFormation Template
+
+# First, replicate the environment variables explicitly
+
+# IROPS
+export IROPS_HOME=~/Workspaces/irops/irops-refarch
+
+# Company
+export COMPANY_CODE=hpe
+export COMPANY_NAME="Hewlett-Packard Enterprise"
+
+# Location
+export LOCATION_CODE=uw2
+export LOCATION_NAME="AWS US-West-2"
+
+# Environment
+export ENVIRONMENT_CODE=d
+export ENVIRONMENT_NAME="Development"
+
+# System
+export SYSTEM_CODE=irops
+export SYSTEM_NAME="IROPS"
+export SYSTEM_VPC_NETWORK=80
+export SYSTEM_VPC_SUBNET=0
+
+# Application
+export APPLICATION_CODE=eng
+export APPLICATION_NAME="Engine"
+
+# Region
+export AWS_DEFAULT_REGION=us-west-2
+
+# Account
+export AWS_ACCOUNT_NAME=irops
+export AWS_ACCOUNT_NUMBER=624812452220
+
+# User
+export AWS_USER_NAME=mcrawford
+
+# Credentials
+export AWS_DEFAULT_PROFILE=$AWS_ACCOUNT_NAME-$AWS_USER_NAME
+
+# Keys
+export AWS_SSH_KEY_ID=mcrawford
+export AWS_SSH_KEY_FILE=${HOME}/.ssh/hpe_${AWS_SSH_KEY_ID}_id_rsa
+
+# Notification
+unset SNS_ADMINISTRATOR_TOPIC
+
+# Owner
+#export OWNER_EMAIL="Michael Crawford <mcrawford@hpe.com>"
+export OWNER_EMAIL=mcrawford@hpe.com
+
+# Home
+export HOME_CIDR=72.215.187.176/28
+
+
+# List current stacks
+echo
+aws cloudformation describe-stacks
+
+
+# Display the command
+echo
+echo "aws cloudformation create-stack --stack-name $COMPANY_CODE$LOCATION_CODE$ENVIRONMENT_CODE$SYSTEM_CODE-vpc \\"
+echo "                                --template-body file://$IROPS_HOME/infrastructure/vpc.json \\"
+echo "                                --parameters ParameterKey=CompanyCode,ParameterValue=$COMPANY_CODE \\"
+echo "                                             ParameterKey=LocationCode,ParameterValue=$LOCATION_CODE \\"
+echo "                                             ParameterKey=EnvironmentCode,ParameterValue=$ENVIRONMENT_CODE \\"
+echo "                                             ParameterKey=SystemCode,ParameterValue=$SYSTEM_CODE \\"
+echo "                                             ParameterKey=ApplicationCode,ParameterValue=$APPLICATION_CODE \\"
+echo "                                             ParameterKey=OwnerEmail,ParameterValue=\"$OWNER_EMAIL\" \\"
+echo "                                             ParameterKey=KeyName,ParameterValue=$AWS_SSH_KEY_ID \\"
+echo "                                             ParameterKey=AdministrationCIDR,ParameterValue=\"$HOME_CIDR\" \\"
+echo "                                             ParameterKey=VpcNetwork,ParameterValue=$SYSTEM_VPC_NETWORK \\"
+echo "                                             ParameterKey=VpcSubnet,ParameterValue=$SYSTEM_VPC_SUBNET \\"
+echo "                                             ParameterKey=VpnNatInstanceType,ParameterValue=t2.nano \\"
+echo "                                --capabilities CAPABILITY_IAM \\"
+echo "                                --tags Key=Company,Value=\"$COMPANY_NAME\" \\"
+echo "                                       Key=Environment,Value=\"$ENVIRONMENT_NAME\" \\"
+echo "                                       Key=System,Value=\"$SYSTEM_NAME\" \\"
+echo "                                       Key=Owner,Value=\"$OWNER_EMAIL\""
+
+echo
+echo -n "Create Stack?"
+read answer
+[ "$answer" = "n" ] && exit
+
+# Create the stack
+aws cloudformation create-stack --stack-name $COMPANY_CODE$LOCATION_CODE$ENVIRONMENT_CODE$SYSTEM_CODE-vpc \
+                                --template-body file://$IROPS_HOME/infrastructure/vpc.json \
+                                --parameters ParameterKey=CompanyCode,ParameterValue=$COMPANY_CODE \
+                                             ParameterKey=LocationCode,ParameterValue=$LOCATION_CODE \
+                                             ParameterKey=EnvironmentCode,ParameterValue=$ENVIRONMENT_CODE \
+                                             ParameterKey=SystemCode,ParameterValue=$SYSTEM_CODE \
+                                             ParameterKey=ApplicationCode,ParameterValue=$APPLICATION_CODE \
+                                             ParameterKey=OwnerEmail,ParameterValue="$OWNER_EMAIL" \
+                                             ParameterKey=KeyName,ParameterValue=$AWS_SSH_KEY_ID \
+                                             ParameterKey=AdministrationCIDR,ParameterValue="$HOME_CIDR" \
+                                             ParameterKey=VpcNetwork,ParameterValue=$SYSTEM_VPC_NETWORK \
+                                             ParameterKey=VpcSubnet,ParameterValue=$SYSTEM_VPC_SUBNET \
+                                             ParameterKey=VpnNatInstanceType,ParameterValue=t2.nano \
+                                --capabilities CAPABILITY_IAM \
+                                --tags Key=Company,Value="$COMPANY_NAME" \
+                                       Key=Environment,Value="$ENVIRONMENT_NAME" \
+                                       Key=System,Value="$SYSTEM_NAME" \
+                                       Key=Owner,Value="$OWNER_EMAIL"
+
+echo
+echo -n "List Stacks?"
+read answer
+[ "$answer" = "n" ] && exit
+
+# List current stacks
+echo
+aws cloudformation describe-stacks
+
+
+# Display the command
+echo
+echo "aws cloudformation delete-stack --stack-name $COMPANY_CODE$LOCATION_CODE$ENVIRONMENT_CODE$SYSTEM_CODE-vpc"
+
+echo
+echo -n "Delete Stack?"
+read answer
+[ "$answer" = "n" ] && exit
+
+# Create the stack
+aws cloudformation delete-stack --stack-name $COMPANY_CODE$LOCATION_CODE$ENVIRONMENT_CODE$SYSTEM_CODE-vpc
+
